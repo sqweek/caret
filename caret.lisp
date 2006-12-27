@@ -57,7 +57,7 @@
 
 ;; ========================== General
 (defun startup ()
-  (values '("CHAT" "/chat") (caret-chat "I live!")))
+  (values '("CHAT" "/chat")))
 
 (defun english-list (list &key (comb "or"))
   (if (cdr list)
@@ -120,7 +120,7 @@
   (handler-case
     (with-slots (name) pl-entry
       (caret-chat "~A: ~A = ~D" name msg (eval (with-input-from-string (s msg) (dice-expr s)))))
-    (parse-error () (caret-chat "~A: ~A = Syntax Error"))))
+    (parse-error () (caret-chat "~A: ~A = Syntax Error" name msg))))
 
 (defun caret-cmd-eggplant (pl-entry msg)
   (declare (ignore pl-entry msg))
