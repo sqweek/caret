@@ -192,6 +192,7 @@
              (concatenate 'string "/usr/share/zoneinfo/" tz-name)
              :load t)
            +omfg-lol-temp-tz+)
+    (simple-error () nil)
     (sb-int:simple-file-error () nil)
     (sb-int:simple-stream-error () nil)))
 
@@ -224,6 +225,7 @@
       (setf (car sub) (floor diff (caddr sub)))
       (decf diff (* (car sub) (caddr sub))))))
 
+;TODO factor out duplicate matching code
 (defun caret-cmd-timezone (pl-entry args)
   "Specify your timezone. See http://sqweek.dnsdojo.org/cmc/timezone-list.txt for a full listing"
   (with-slots (name) pl-entry
@@ -237,7 +239,7 @@
           (1 (let ((tz (local-time-tz (car matches))))
                (setf (timezone p) tz)
                (caret-chat "Noted: ~A's timezone is ~A (~A)" name (tz-abbrev tz) (car matches))))
-          ((2 3 4 5) (caret-chat "~A, did you perhaps mean one of ~A?" name (english-list matches)))
+          ((2 3 4 5 6 7 8 9) (caret-chat "~A, did you perhaps mean one of ~A?" name (english-list matches)))
           (otherwise (caret-chat "~A is way too vague a timezone ~A, I have ~D matches!"
                                  args name (length matches))))))))
 
@@ -248,13 +250,23 @@
                               (time-str (local-time-adjust (local-time:now) tz)
                                         tz))))
     (if (< 0 (length args))
-      (let ((p (gethash (string-downcase args) *players-time*)))
+      (let ((p (gethash (string-downcase args) *players-time*))
+            (tz (local-time-tz args)))
         (if p
           (if (timezone p)
             (curtime (timezone p))
             (caret-chat "~A hasn't told me their timezone :(" args))
-          (let ((tz (local-time-tz args)))
-            (if tz (curtime tz)))))
+          (if tz
+            (curtime tz)
+            (let ((matches (remove-if-not (lambda (x)
+                                            (search args x :test #'string-equal))
+                                          *tz-list*)))
+              (case (length matches)
+                (0 (caret-chat "I don't know any player or timezone by that name"))
+                (1 (curtime (local-time-tz (car matches))))
+                ((2 3 4 5 6 7 8 9) (caret-chat "Near matches: ~A" (english-list matches :comb "and")))
+                (otherwise (caret-chat "~D timezones match \"~A\", be more specific"
+                                       (length matches) args)))))))
       (curtime +utc-timezone+))))
 
 (defun caret-cmd-seen (pl-entry name)
