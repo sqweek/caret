@@ -117,10 +117,10 @@
   (caret-chat "Ha, Gorilla, right there!"))
 
 (defun caret-cmd-dice (pl-entry msg)
-  (handler-case
-    (with-slots (name) pl-entry
-      (caret-chat "~A: ~A = ~D" name msg (eval (with-input-from-string (s msg) (dice-expr s)))))
-    (parse-error () (caret-chat "~A: ~A = Syntax Error" name msg))))
+  (with-slots (name) pl-entry
+    (handler-case
+      (caret-chat "~A: ~A = ~D" name msg (eval (with-input-from-string (s msg) (dice-expr s))))
+      (parse-error () (caret-chat "~A: ~A = Syntax Error" name msg)))))
 
 (defun caret-cmd-eggplant (pl-entry msg)
   (declare (ignore pl-entry msg))
