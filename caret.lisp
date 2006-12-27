@@ -14,13 +14,13 @@
     ;;(caret-log "<~A> ~A" *name* msg)
     `("CHAT" ,msg)))
 
-(defun log-init
+(defun log-init ()
   (handler-case
     (setf *log-stream* (open *log-file* :direction :output
                              :if-exists :append
                              :if-does-not-exist :create))
-    (:error (setf *log-stream* *standard-output*)
-            (format nil "Error opening ~A~%" *log-file*)))
+    (error () (setf *log-stream* *standard-output*)
+           (format t "Error opening ~A~%" *log-file*)))
   (caret-log "Connected."))
 
 (add-init-hook :log #'log-init)
