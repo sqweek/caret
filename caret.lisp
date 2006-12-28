@@ -129,8 +129,8 @@
 ;; ========================== Time
 (defvar *players-time* (make-hash-table :test #'equal))
 
-(defun update-hist (player)
-  (let* ((cur-utime (get-universal-time))
+(defun update-hist (player &optional (update-time nil))
+  (let* ((cur-utime (or update-time (get-universal-time)))
          (old-utime (lasthist player)))
     (multiple-value-bind (old-sec old-min old-hr)
       (decode-universal-time old-utime 0)
@@ -138,7 +138,7 @@
             (secs-hr1 (- 3600 (* old-min 60) old-sec)))
         (incf (elt (timehist player) old-hr) (/ secs-hr1 3600))
         (decf secs-left secs-hr1)
-        (do ((hr (+ old-hr 1) (incf hr)))
+        (do ((hr (+ old-hr 1) (setf hr (mod (+ 1 hr) 24))))
           ((> 3600 secs-left)
            (incf (elt (timehist player) hr) (/ secs-left 3600)))
           (incf (elt (timehist player) hr))
