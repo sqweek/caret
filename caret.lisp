@@ -52,6 +52,12 @@
 (add-play-hook :backup #'backup)
 (add-part-hook :backup #'backup)
 
+(defun caret-cmd-backup (pl-entry args)
+  (declare (ignore args))
+  (when (string= (slot-value pl-entry 'name) "sqweek")
+    (setf *backup-time* (- (get-universal-time) *backup-interval* 5))
+    (backup)))
+
 (enable-module :backup)
 
 
