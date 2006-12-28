@@ -138,7 +138,7 @@
             (secs-hr1 (- 3600 (* old-min 60) old-sec)))
         (incf (elt (timehist player) old-hr) (/ secs-hr1 3600))
         (decf secs-left secs-hr1)
-        (do ((hr (+ old-hr 1) (setf hr (mod (+ 1 hr) 24))))
+        (do ((hr (mod (+ old-hr 1) 24) (setf hr (mod (+ 1 hr) 24))))
           ((> 3600 secs-left)
            (incf (elt (timehist player) hr) (/ secs-left 3600)))
           (incf (elt (timehist player) hr))
