@@ -11,7 +11,7 @@
                (secs-hr1 (min secs-left (- 3600 (* old-min 60) old-sec))))
           (incf (elt (timehist player) old-hr) (/ secs-hr1 3600))
           (decf secs-left secs-hr1)
-          (do ((hr (+ old-hr 1)) (incf hr))
+          (do ((hr (+ old-hr 1) (incf hr)))
             ((> 3600 secs-left)
              (incf (elt (timehist player) (mod hr 24)) (/ secs-left 3600)))
             (incf (elt (timehist player) (mod hr 24)))
