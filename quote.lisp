@@ -10,6 +10,8 @@
          (caret-chat "Quote ~D added by ~A"
                      (+ 1 (vector-push-extend (subseq args 4) *quote-list*))
                      (slot-value pl-entry 'name)))
+        ((string-equal "count" args)
+         (caret-chat "There are currently ~D quotes" (length *quote-list*)))
         ((parse-integer args :junk-allowed t)
          (let ((num (parse-integer args :junk-allowed t)))
            (print "a")
