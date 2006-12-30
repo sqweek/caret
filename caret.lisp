@@ -34,7 +34,7 @@
 (defun caret-cmd-help (pl-entry args)
   "^help <command> : get help on commands where available"
   (declare (ignore pl-entry))
-  (if (args)
+  (if (< 0 (length args))
     (let ((cmd-fun (intern (concatenate 'string "CARET-CMD-" (string-upcase args)))))
       (if (fboundp cmd-fun)
         (caret-chat "~A: ~A" args (or (documentation cmd-fun 'function)

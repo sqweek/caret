@@ -27,6 +27,6 @@
 
 (defun caret-cmd-backup (pl-entry args)
   (when (string= (slot-value pl-entry 'name) "sqweek")
-    (force-backup (or args *backup-file*))))
+    (force-backup (if (< 0 (length args)) args *backup-file*))))
 
 (enable-module :backup)
