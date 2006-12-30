@@ -147,19 +147,21 @@
 
 (defun caret-cmd-seen (pl-entry name)
   (declare (ignore pl-entry))
-  (let ((p (gethash (string-downcase name) *players-time*)))
-    (if p
-      (destructuring-bind (time activity arg) (seen p)
-        (let ((dur-str (duration-str (time-since time))))
-          (case activity
-            ('play (caret-chat "~A was seen ~A ago, playing ~A"
-                               name dur-str arg))
-            ('chat (caret-chat "~A was seen ~A ago, saying: ~A"
-                               name dur-str arg))
-            ('join (caret-chat "~A was seen ~A ago, joining the matchmaker"
-                               name dur-str))
-            (otherwise (caret-chat "~A was seen ~A ago, but I'm not sure what they were doing" name dur-str)))))
-      (caret-chat "I have never seen ~A!" name))))
+  (if (string-equal name *name*)
+    (caret-chat "I'm right here!")
+    (let ((p (gethash (string-downcase name) *players-time*)))
+      (if p
+        (destructuring-bind (time activity arg) (seen p)
+          (let ((dur-str (duration-str (time-since time))))
+            (case activity
+              ('play (caret-chat "~A was seen ~A ago, playing ~A"
+                                 name dur-str arg))
+              ('chat (caret-chat "~A was seen ~A ago, saying: ~A"
+                                 name dur-str arg))
+              ('join (caret-chat "~A was seen ~A ago, joining the matchmaker"
+                                 name dur-str))
+              (otherwise (caret-chat "~A was seen ~A ago, but I'm not sure what they were doing" name dur-str)))))
+        (caret-chat "I have never seen ~A!" name)))))
 
 (defun tm-join (pl-entry)
   (with-slots (name) pl-entry
