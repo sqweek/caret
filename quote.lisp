@@ -20,4 +20,4 @@
 
 (defun caret-persist-quote (stream)
   (print '(setf *quote-list* (make-array 1 :fill-pointer 0 :adjustable t)) stream)
-  (map nil (lambda (q) (print `(vector-push-extend ,q *quote-list*))) *quote-list*))
+  (map nil (lambda (q) (print `(vector-push-extend ,q *quote-list*) stream)) *quote-list*))
