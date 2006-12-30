@@ -131,7 +131,7 @@
         (if p
           (if (timezone p)
             (curtime (timezone p))
-            (caret-chat "~A hasn't told me their timezone :(" args))
+            (caret-chat "~A hasn't told me their timezone :(" (name p)))
           (if tz
             (curtime tz)
             (let ((matches (remove-if-not (lambda (x)
@@ -196,7 +196,8 @@
 (defun caret-persist-time (stream)
   (maphash
     (lambda (key player)
-      (update-hist player)
+      (when (mm-onlinep (name player))
+        (update-hist player))
       (print `(setf (gethash ,key *players-time*)
                     (make-instance 'player-time
                                    :name ,(name player)

@@ -64,6 +64,10 @@
                    pl-entries))
            pl-entries))))
 
+(defun mm-onlinep (name)
+  (when (mm-get-player name)
+    t))
+
 (defun mm-get-player (name)
   (find-if (lambda (entry) (equal name (slot-value entry 'name))) *mm-playlist*))
 
