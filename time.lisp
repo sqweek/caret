@@ -150,7 +150,7 @@
   (if (string-equal name *name*)
     (caret-chat "I'm right here!")
     (let ((p (gethash (string-downcase name) *players-time*)))
-      (if p
+      (if (and p (seen p))
         (destructuring-bind (time activity arg) (seen p)
           (let ((dur-str (duration-str (time-since time))))
             (case activity
