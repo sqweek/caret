@@ -194,6 +194,7 @@
 (defun caret-persist-time (stream)
   (maphash
     (lambda (key player)
+      (update-hist player)
       (print `(setf (gethash ,key *players-time*)
                     (make-instance 'player-time
                                    :name ,(name player)
