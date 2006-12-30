@@ -40,7 +40,7 @@
         (caret-chat "~A: ~A" args (or (documentation cmd-fun 'function)
                                       "no help available"))
         (caret-chat "~A: no such command" args)))
-    (caret-chat "available commands: dice info seen time timezone")))
+    (caret-chat "available commands: dice info quote seen time timezone")))
 
 (defun caret-cmd-info (pl-entry args)
   (declare (ignore pl-entry args))
