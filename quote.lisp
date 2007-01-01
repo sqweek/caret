@@ -14,9 +14,6 @@
          (caret-chat "There are currently ~D quotes" (length *quote-list*)))
         ((parse-integer args :junk-allowed t)
          (let ((num (parse-integer args :junk-allowed t)))
-           (print "a")
-           (print num)
-           (print "b")
            (when (<= 1 num (length *quote-list*))
              (caret-chat "~D: ~A" num (elt *quote-list* (- num 1))))))))
 
