@@ -19,7 +19,7 @@
 (defun caret-cmd (pl-entry msg)
   (cl-ppcre:register-groups-bind
     (cmd args)
-    ("^\\^(\\w*) ?(.*?) *" msg)
+    ("^\\^(\\w*) ?(.*?) *$" msg)
     (when cmd
       (let ((cmd-fun (intern (concatenate 'string "CARET-CMD-" (string-upcase cmd)))))
         (if (fboundp cmd-fun)
