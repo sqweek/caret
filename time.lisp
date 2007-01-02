@@ -110,7 +110,7 @@
         (return (list match))))))
 
 (defun caret-cmd-timezone (pl-entry args)
-  "Specify your timezone. See http://sqweek.dnsdojo.org/cmc/timezone-list.txt for a full listing"
+  "Specify your timezone. See http://sqweek.dnsdojo.org/cmc/timezone-list.txt for a full listing."
   (with-slots (name) pl-entry
     (let ((p (gethash (string-downcase name) *players-time*))
           (matches (tz-lookup args)))
@@ -125,6 +125,7 @@
                                  args name (length matches))))))))
 
 (defun caret-cmd-time (pl-entry args)
+  "Check the time in a certain timezone. Player names work for players that have defined their timezone using ^timezone."
   (declare (ignore pl-entry))
   (flet ((curtime (tz)
                   (caret-chat
@@ -147,6 +148,7 @@
       (curtime +utc-timezone+))))
 
 (defun caret-cmd-seen (pl-entry name)
+  "Find out what a player was last seen doing."
   (declare (ignore pl-entry))
   (if (string-equal name *name*)
     (caret-chat "I'm right here!")

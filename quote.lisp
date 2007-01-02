@@ -1,6 +1,7 @@
 (defvar *quote-list* (make-array 1 :fill-pointer 0 :adjustable t))
 
 (defun caret-cmd-quote (pl-entry args)
+  "^quote <number> for a specific quote, ^quote count to find the number of quotes, ^quote add <quote> to add a quote."
   (cond ((= 0 (length args))
          (if (< 0 (length *quote-list*))
            (let ((num (random (length *quote-list*))))

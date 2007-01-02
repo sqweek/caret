@@ -7,6 +7,7 @@
 ;TODO trades
 ;; hooks are plists of :module #'function pairs, ordered on a FCFS basis
 (defvar *mm-init-hooks* nil) ;;started up
+(defvar *mm-fini-hooks* nil) ;;shutting down/connection terminated
 (defvar *mm-chat-hooks* nil) ;;someone said something
 (defvar *mm-join-hooks* nil) ;;someone joined
 (defvar *mm-play-hooks* nil) ;;people are playing
@@ -77,16 +78,25 @@
       (apply handler (cdr message))
       (format t "No handler for message ~{~A#~}~%" message))))
 
+(defun parse-message-line (stream message-line)
+  (let ((message (split #\# message-line)))
+    (dolist (command (multiple-value-list (parse-message message)))
+      (when command
+        (write-line (join "#" command) stream)))
+    (force-output stream)))
+
 (defun message-loop (stream)
-  (do ()
-    (nil)
-    (let* ((message-line (read-line stream))
-           (message (split #\# message-line))
-           (response (multiple-value-list (parse-message message))))
-        (progn (dolist (command response)
-                 (when command
-                   (write-line (join "#" command) stream))
-                 (force-output stream))))))
+  (handler-case
+    (do ()
+      (nil)
+      (let ((message-line (with-timeout 300 (read-line stream))))
+        (parse-message-line message-line)))
+    (timeout (tmout)
+             (dolist (player *mm-playlist*) (run-hooks *mm-part-hooks* player))
+             (setf *mm-playlist* '())
+             (run-hooks *mm-fini-hooks*)
+             (error tmout))))
+
 
 (defun run-hooks (hooks &rest args)
   (let ((results nil))
@@ -118,6 +128,8 @@
   (add-hook *mm-play-hooks* module hook))
 (defun add-mode-hook (module hook)
   (add-hook *mm-mode-hooks* module hook))
+(defun add-fini-hook (module hook)
+  (add-hook *mm-fini-hooks* module hook))
 
 (defun enable-module (module)
   (setf *mm-modules* (adjoin module *mm-modules*)))

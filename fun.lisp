@@ -3,10 +3,14 @@
   (caret-chat "Ha, Gorilla, right there!"))
 
 (defun caret-cmd-dice (pl-entry msg)
+  "Roll some dice. eg, ^dice d20+4-2d6"
   (with-slots (name) pl-entry
     (handler-case
-      (caret-chat "~A: ~A = ~D" name msg (eval (with-input-from-string (s msg) (dice-expr s))))
-      (parse-error () (caret-chat "~A: ~A = Syntax Error" name msg)))))
+      (with-timeout 1
+        (caret-chat "~A: ~A = ~D" name msg
+                    (eval (with-input-from-string (s msg) (dice-expr s)))))
+      (parse-error () (caret-chat "~A: ~A = Syntax Error" name msg))
+      (timeout () (caret-chat "~A: ~A = No." name msg)))))
 
 (defun caret-cmd-eggplant (pl-entry msg)
   (declare (ignore pl-entry msg))

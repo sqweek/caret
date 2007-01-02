@@ -19,7 +19,7 @@
 (defun caret-cmd (pl-entry msg)
   (cl-ppcre:register-groups-bind
     (cmd args)
-    ("^\\^(\\w*) ?(.*)" msg)
+    ("^\\^(\\w*) ?(.*?) *" msg)
     (when cmd
       (let ((cmd-fun (intern (concatenate 'string "CARET-CMD-" (string-upcase cmd)))))
         (if (fboundp cmd-fun)
@@ -44,7 +44,7 @@
 
 (defun caret-cmd-info (pl-entry args)
   (declare (ignore pl-entry args))
-  (caret-chat "Caret-0.8.6 written by sqweek in Lisp"))
+  (caret-chat "Caret-0.8.7 written by sqweek in Lisp"))
 
 (add-init-hook :misc #'startup)
 (add-chat-hook :misc #'caret-cmd)
