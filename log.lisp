@@ -13,7 +13,8 @@
   (handler-case
     (setf *log-stream* (open *log-file* :direction :output
                              :if-exists :append
-                             :if-does-not-exist :create))
+                             :if-does-not-exist :create
+                             :external-format :utf-8))
     (error () (setf *log-stream* *standard-output*)
            (format t "Error opening ~A~%" *log-file*)))
   (caret-log "Connected."))
