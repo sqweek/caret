@@ -90,7 +90,7 @@
     (do ()
       (nil)
       (let ((message-line (with-timeout 300 (read-line stream))))
-        (parse-message-line message-line)))
+        (parse-message-line stream message-line)))
     (timeout (tmout)
              (dolist (player *mm-playlist*) (run-hooks *mm-part-hooks* player))
              (setf *mm-playlist* '())
