@@ -158,7 +158,7 @@
      (destructuring-bind (lname time activity arg) *last-event*
        (let ((dur-str (duration-str (time-since time))))
          (case activity
-           ('play (caret-chat "~A ago, ~A played vs ~A" dur-str lname arg))
+           ('play (caret-chat "~A ago, ~A played against ~A" dur-str lname arg))
            ('chat (caret-chat "~A ago, ~A said: ~A" dur-str lname arg))))))
     ((string-equal name *name*) (caret-chat "I'm right here!"))
     (t (let ((p (gethash (string-downcase name) *players-time*)))
