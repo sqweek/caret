@@ -1,5 +1,6 @@
 ;; ========================== Time
 (defvar *players-time* (make-hash-table :test #'equal))
+(defvar *last-event* nil)
 
 (defun update-hist (player &optional (update-time nil))
   (let* ((cur-utime (or update-time (get-universal-time)))
@@ -112,17 +113,19 @@
 (defun caret-cmd-timezone (pl-entry args)
   "Specify your timezone. See http://sqweek.dnsdojo.org/cmc/timezone-list.txt for a full listing."
   (with-slots (name) pl-entry
-    (let ((p (gethash (string-downcase name) *players-time*))
-          (matches (tz-lookup args)))
-      (when p
-        (case (length matches)
-          (0 (caret-chat "Sorry ~A, I don't know any timezones that look like ~A" name args))
-          (1 (let ((tz (local-time-tz (car matches))))
-               (setf (timezone p) tz)
-               (caret-chat "Noted: ~A's timezone is ~A (~A)" name (tz-abbrev tz) (car matches))))
-          ((2 3 4 5 6 7 8 9) (caret-chat "~A, did you perhaps mean one of ~A?" name (english-list matches)))
-          (otherwise (caret-chat "~A is way too vague a timezone ~A, I have ~D matches!"
-                                 args name (length matches))))))))
+    (if (< 0 (length args))
+      (let ((p (gethash (string-downcase name) *players-time*))
+            (matches (tz-lookup args)))
+        (when p
+          (case (length matches)
+            (0 (caret-chat "Sorry ~A, I don't know any timezones that look like ~A" name args))
+            (1 (let ((tz (local-time-tz (car matches))))
+                 (setf (timezone p) tz)
+                 (caret-chat "Noted: ~A's timezone is ~A (~A)" name (tz-abbrev tz) (car matches))))
+            ((2 3 4 5 6 7 8 9) (caret-chat "~A, did you perhaps mean one of ~A?" name (english-list matches)))
+            (otherwise (caret-chat "~A is way too vague a timezone ~A, I have ~D matches!"
+                                   args name (length matches)))))))
+    (caret-chat "You didn't specify a timezone! See http://sqweek.dnsdojo.org/cmc/timezone-list.txt for a full listing")))
 
 (defun caret-cmd-time (pl-entry args)
   "Check the time in a certain timezone. Player names work for players that have defined their timezone using ^timezone."
@@ -150,21 +153,27 @@
 (defun caret-cmd-seen (pl-entry name)
   "Find out what a player was last seen doing."
   (declare (ignore pl-entry))
-  (if (string-equal name *name*)
-    (caret-chat "I'm right here!")
-    (let ((p (gethash (string-downcase name) *players-time*)))
-      (if (and p (seen p))
-        (destructuring-bind (time activity arg) (seen p)
-          (let ((dur-str (duration-str (time-since time))))
-            (case activity
-              ('play (caret-chat "~A was seen ~A ago, playing ~A"
-                                 name dur-str arg))
-              ('chat (caret-chat "~A was seen ~A ago, saying: ~A"
-                                 name dur-str arg))
-              ('join (caret-chat "~A was seen ~A ago, joining the matchmaker"
-                                 name dur-str))
-              (otherwise (caret-chat "~A was seen ~A ago, but I'm not sure what they were doing" name dur-str)))))
-        (caret-chat "I have never seen ~A!" name)))))
+  (cond
+    ((= 0 (length name))
+     (destructuring-bind (lname time activity arg) *last-event*
+       (let ((dur-str (duration-str (time-since time))))
+         (case activity
+           ('play (caret-chat "~A ago, ~A played vs ~A" dur-str lname arg))
+           ('chat (caret-chat "~A ago, ~A said: ~A" dur-str lname arg))))))
+    ((string-equal name *name*) (caret-chat "I'm right here!"))
+    (t (let ((p (gethash (string-downcase name) *players-time*)))
+         (if (and p (seen p))
+           (destructuring-bind (time activity arg) (seen p)
+             (let ((dur-str (duration-str (time-since time))))
+               (case activity
+                 ('play (caret-chat "~A was seen ~A ago, playing ~A"
+                                    name dur-str arg))
+                 ('chat (caret-chat "~A was seen ~A ago, saying: ~A"
+                                    name dur-str arg))
+                 ('join (caret-chat "~A was seen ~A ago, joining the matchmaker"
+                                    name dur-str))
+                 (otherwise (caret-chat "~A was seen ~A ago, but I'm not sure what they were doing" name dur-str)))))
+           (caret-chat "I have never seen ~A!" name))))))
 
 (defun tm-join (pl-entry)
   (with-slots (name) pl-entry
@@ -182,15 +191,19 @@
 
 (defun tm-chat (pl-entry msg)
   (with-slots (name) pl-entry
-    (let ((p (gethash (string-downcase name) *players-time*)))
-      (with-slots (seen) p
-        (setf seen (list (get-universal-time) 'chat msg))
-        nil))))
+    (let ((p (gethash (string-downcase name) *players-time*))
+          (time (get-universal-time)))
+      (setf *last-event* (list name time 'chat msg))
+      (when p
+        (with-slots (seen) p
+          (setf seen (list time 'chat msg))
+          nil)))))
 
 (defun tm-play (pl1 pl2)
   (let ((p1 (gethash (string-downcase (slot-value pl1 'name)) *players-time*))
         (p2 (gethash (string-downcase (slot-value pl2 'name)) *players-time*))
             (time (get-universal-time)))
+    (setf *last-event* (list (slot-value pl1 'name) time 'play (slot-value pl2 'name)))
     (when (and p1 p2)
       (setf (seen p1) (list time 'play (slot-value pl2 'name)))
       (setf (seen p2) (list time 'play (slot-value pl1 'name)))
