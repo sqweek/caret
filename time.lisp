@@ -193,7 +193,8 @@
   (with-slots (name) pl-entry
     (let ((p (gethash (string-downcase name) *players-time*))
           (time (get-universal-time)))
-      (setf *last-event* (list name time 'chat msg))
+      (unless (string= name *name)
+        (setf *last-event* (list name time 'chat msg)))
       (when p
         (with-slots (seen) p
           (setf seen (list time 'chat msg))
