@@ -44,7 +44,7 @@
 
 (defun caret-cmd-info (pl-entry args)
   (declare (ignore pl-entry args))
-  (caret-chat "Caret-0.9.0 written by sqweek in Lisp"))
+  (caret-chat "Caret-0.9.1 written by sqweek in Lisp"))
 
 (add-init-hook :misc #'startup)
 (add-chat-hook :misc #'caret-cmd)
@@ -55,9 +55,14 @@
 (defun caret-go ()
   (setf *mm-name* "Caret")
   (setf *mm-login-code* (get-code (get-cookie *name* *cmc-pass*)))
-  (tagbody
-    retry (handler-bind ((timeout (lambda (c) (declare (ignore c))
-                                    (go retry))))
-            (with-open-stream
-              (stream (trivial-sockets:open-stream *cmc-host* *cmc-mmpt*))
-              (message-loop stream)))))
+  (tagbody retry
+           (handler-bind
+             ((timeout
+                (lambda (c) (declare (ignore c)) (go retry)))
+              (trivial-sockets:socket-error
+                (lambda (c) (declare (ignore c))
+                  (format t "Connect failed, retrying in 2 minutes~%")
+                  (sleep 120) (go retry))))
+             (with-open-stream
+               (stream (trivial-sockets:open-stream *cmc-host* *cmc-mmpt*))
+               (message-loop stream)))))
