@@ -11,10 +11,14 @@
 
 (defun log-init ()
   (handler-case
-    (setf *log-stream* (open *log-file* :direction :output
-                             :if-exists :append
-                             :if-does-not-exist :create
-                             :external-format :utf-8))
+    (progn
+      (when (not (eq *log-stream* *standard-output*))
+        (close *log-stream*)
+        (setf *log-stream* *standard-output*))
+      (setf *log-stream* (open *log-file* :direction :output
+                               :if-exists :append
+                               :if-does-not-exist :create
+                               :external-format :utf-8)))
     (error () (setf *log-stream* *standard-output*)
            (format t "Error opening ~A~%" *log-file*)))
   (caret-log "Connected."))

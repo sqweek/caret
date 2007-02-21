@@ -19,10 +19,13 @@
     (if (eq response 200)
       (let ((data (make-array (parse-integer (cdr (assoc ':CONTENT-LENGTH headers))) :element-type 'character)))
         (read-sequence data stream)
+        (close stream)
         (unless (null (search "Success!" data))
           (let ((cookie (cdr (assoc ':SET-COOKIE headers))))
             (subseq cookie 0 (position #\; cookie)))))
-      (nil))))
+      (progn
+        (close stream)
+        nil))))
 
 (defun get-code (cookie)
   (destructuring-bind (response headers stream)
@@ -32,10 +35,13 @@
     (if (eq response 200)
       (let* ((data (make-array 32768 :element-type 'character)))
         (read-sequence data stream)
+        (close stream)
         (let* ((applet (cl-ppcre:scan-to-strings "(?is)<applet.*?>" data))
                (check-line (cl-ppcre:scan-to-strings "(?i)check \= \".*?\"" applet)))
           (subseq check-line
                   (+ 1 (position #\" check-line))
                   (position #\" check-line :from-end t))))
-      (nil))))
+      (progn
+        (close stream)
+        nil))))
 

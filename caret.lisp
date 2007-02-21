@@ -56,13 +56,12 @@
   (setf *mm-name* "Caret")
   (setf *mm-login-code* (get-code (get-cookie *name* *cmc-pass*)))
   (tagbody retry
-           (handler-bind
-             ((timeout
-                (lambda (c) (declare (ignore c)) (go retry)))
-              (trivial-sockets:socket-error
-                (lambda (c) (declare (ignore c))
-                  (format t "Connect failed, retrying in 2 minutes~%")
-                  (sleep 120) (go retry))))
+           (handler-case
              (with-open-stream
                (stream (trivial-sockets:open-stream *cmc-host* *cmc-mmpt*))
-               (message-loop stream)))))
+               (message-loop stream))
+             (timeout () (go retry))
+             (trivial-sockets:socket-error ()
+               (format t "Connect failed, retrying in 2 minutes~%")
+               (sleep 120)
+               (go retry)))))
