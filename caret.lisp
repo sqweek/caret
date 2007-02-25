@@ -60,8 +60,11 @@
              (with-open-stream
                (stream (trivial-sockets:open-stream *cmc-host* *cmc-mmpt*))
                (message-loop stream))
-             (timeout () (go retry))
+             (timeout ()
+                      (close stream)
+                      (go retry))
              (trivial-sockets:socket-error ()
+               (close stream)
                (format t "Connect failed, retrying in 2 minutes~%")
                (sleep 120)
                (go retry)))))
