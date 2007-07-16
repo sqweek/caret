@@ -8,7 +8,7 @@
 (defsystem cmcbot
            :name "cmcbot"
            :author "sqweek"
-           :depends-on (:trivial-http :trivial-sockets :cl-ppcre :local-time :sb-posix)
+           :depends-on (:trivial-http :cl-ppcre :local-time :sb-bsd-sockets :sb-posix)
            :components ((:file "settings")
                         (:file "http" :depends-on ("settings"))
                         (:file "mm" :depends-on ("settings"))

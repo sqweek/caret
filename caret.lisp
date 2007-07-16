@@ -51,18 +51,39 @@
 
 (enable-module :misc)
 
-;TODO automatically reconnect when things go sideways
+(defun getaddr (hostname)
+  (car (sb-bsd-sockets:host-ent-addresses
+         (sb-bsd-sockets:get-host-by-name hostname))))
+
+(defun connect (hostname port)
+  (let ((s (make-instance 'sb-bsd-sockets:inet-socket
+                          :type :stream
+                          :protocol :tcp))
+        (addr (getaddr hostname)))
+    (handler-case
+      (progn
+        (sb-bsd-sockets:socket-connect s addr port)
+        (sb-bsd-sockets:socket-make-stream s :input t :output t
+                                           :element-type 'character
+                                           :buffering :full))
+      (sb-bsd-sockets:socket-error
+        (condition)
+        (when (sb-bsd-sockets:socket-open-p s)
+          (sb-bsd-sockets:socket-close s))
+        (error condition)))))
+
 (defun caret-go ()
   (setf *mm-name* "Caret")
-  (setf *mm-login-code* (get-code (get-cookie *name* *cmc-pass*)))
   (tagbody retry
            (handler-case
-             (with-open-stream
-               (stream (trivial-sockets:open-stream *cmc-host* *cmc-mmpt*))
-               (message-loop stream))
+             (progn
+               (setf *mm-login-code* (get-code (get-cookie *name* *cmc-pass*)))
+               (with-open-stream
+                 (stream (connect *cmc-host* *cmc-mmpt*))
+                 (message-loop stream)))
              (timeout ()
                       (go retry))
-             (trivial-sockets:socket-error ()
+             (sb-bsd-sockets:socket-error ()
                (format t "Connect failed, retrying in 2 minutes~%")
                (sleep 120)
                (go retry)))))
