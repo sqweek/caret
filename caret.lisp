@@ -17,14 +17,15 @@
     `("CHAT" ,msg)))
 
 (defun caret-cmd (pl-entry msg)
-  (cl-ppcre:register-groups-bind
-    (cmd args)
-    ("^\\^(\\w*) ?(.*?) *$" msg)
-    (when cmd
-      (let ((cmd-fun (intern (concatenate 'string "CARET-CMD-" (string-upcase cmd)))))
-        (if (fboundp cmd-fun)
-          (apply cmd-fun (list pl-entry args))
-          (format t "No command found: ~S~%" cmd-fun))))))
+  (when (not (string= (slot-value pl-entry 'name) "Caret"))
+    (cl-ppcre:register-groups-bind
+      (cmd args)
+      ("^\\^(\\w*) ?(.*?) *$" msg)
+      (when cmd
+        (let ((cmd-fun (intern (concatenate 'string "CARET-CMD-" (string-upcase cmd)))))
+          (if (fboundp cmd-fun)
+            (apply cmd-fun (list pl-entry args))
+            (format t "No command found: ~S~%" cmd-fun)))))))
 
 (defun caret-cmd-reload (pl-entry args)
   (declare (ignore args))
