@@ -145,6 +145,7 @@
   '("PN"))
 
 (defun handle-chastat-msg (info)
+  ;;TODO trades
   ; Joins/quits/modes are handled via playlist ftw, so just deal with matches
   (multiple-value-bind (match players)
     (cl-ppcre:scan-to-strings "(.*) and (.*) are playing Cardmaster Conflict!" info)
