@@ -1,5 +1,18 @@
 (defvar *quote-list* (make-array 1 :fill-pointer 0 :adjustable t))
+(defvar *quote-mofos* '())
 (defparameter *quote-mods* '("sqweek" "Leander"))
+
+(defun quote-mod-p (name)
+  (find-if (lambda (x) (string= x name)) *quote-mods*))
+
+(defun quote-banned-p (name)
+  (find-if (lambda (x) (string= x name)) *quote-mofos*))
+
+(defun quote-ban (name)
+  (setf *quote-mofos* (append *quote-mofos* (list name))))
+
+(defun quote-unban (name)
+  (setf *quote-mofos* (remove-if (lambda (x) (string= x name)) *quote-mofos*)))
 
 (defun caret-cmd-quote (pl-entry args)
   "^quote <number> for a specific quote, ^quote count gives the number of quotes, ^quote add <quote> to add a quote."
@@ -9,12 +22,14 @@
              (caret-chat "~D: ~A" (+ num 1) (elt *quote-list* num)))
            (caret-chat "There's no quotes - quick say something funny!")))
         ((= 0 (or (search "add " args) -1))
-         (caret-chat "Quote ~D added by ~A"
-                     (+ 1 (vector-push-extend (subseq args 4) *quote-list*))
-                     (slot-value pl-entry 'name)))
+         (if (quote-banned-p (slot-value pl-entry 'name))
+           (caret-chat "Sorry ~A, you've been banned from adding quotes"
+                       (slot-value pl-entry 'name))
+           (caret-chat "Quote ~D added by ~A"
+                       (+ 1 (vector-push-extend (subseq args 4) *quote-list*))
+                       (slot-value pl-entry 'name))))
         ((= 0 (or (search "remove " args) -1))
-         (when (find-if (lambda (x) (string= x (slot-value pl-entry 'name)))
-                        *quote-mods*)
+         (when (quote-mod-p (slot-value pl-entry 'name))
            (let ((num (or (parse-integer (subseq args 7) :junk-allowed t)
                           -1)))
              (if (<= 1 num (length *quote-list*))
@@ -22,6 +37,22 @@
                  (setf *quote-list* (delete (elt *quote-list* (- num 1)) *quote-list*))
                  (caret-chat "Quote ~D removed" num))
                (caret-chat "~A: no such quote" (subseq args 7))))))
+        ((= 0 (or (search "ban " args) -1))
+         (when (quote-mod-p (slot-value pl-entry 'name))
+           (let ((mofo (subseq args 4)))
+             (if (quote-banned-p mofo)
+               (caret-chat "~A is already quote-banned" mofo)
+               (progn
+                 (quote-ban mofo)
+                 (caret-chat "~A has been quote-banned" mofo))))))
+        ((= 0 (or (search "unban " args) -1))
+         (when (quote-mod-p (slot-value pl-entry 'name))
+           (let ((mofo (subseq args 6)))
+             (if (not (quote-banned-p mofo))
+               (caret-chat "~A isn't quote-banned" mofo)
+               (progn
+                 (quote-unban mofo)
+                 (caret-chat "~A is no longer quote-banned" mofo))))))
         ((string-equal "count" args)
          (caret-chat "There are currently ~D quotes" (length *quote-list*)))
         ((parse-integer args :junk-allowed t)
@@ -31,4 +62,5 @@
 
 (defun caret-persist-quote (stream)
   (print '(setf *quote-list* (make-array 1 :fill-pointer 0 :adjustable t)) stream)
+  (print `(setf *quote-mofos* (quote ,*quote-mofos*)) stream)
   (map nil (lambda (q) (print `(vector-push-extend ,q *quote-list*) stream)) *quote-list*))
