@@ -45,7 +45,7 @@
 
 (defun caret-cmd-info (pl-entry args)
   (declare (ignore pl-entry args))
-  (caret-chat "Caret-0.9.6 written by sqweek in Lisp"))
+  (caret-chat "Caret-0.9.7 written by sqweek in Lisp"))
 
 (add-init-hook :misc #'startup)
 (add-chat-hook :misc #'caret-cmd)
@@ -85,6 +85,10 @@
              (timeout ()
                       (go retry))
              (sb-bsd-sockets:socket-error ()
+               (format t "Connect failed, retrying in 2 minutes~%")
+               (sleep 120)
+               (go retry))
+             (trivial-sockets:socket-error ()
                (format t "Connect failed, retrying in 2 minutes~%")
                (sleep 120)
                (go retry)))))
