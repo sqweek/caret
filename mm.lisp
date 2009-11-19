@@ -150,7 +150,9 @@
   (multiple-value-bind (match players)
     (cl-ppcre:scan-to-strings "(.*) and (.*) are playing Cardmaster Conflict!" info)
     (declare (ignore match))
-    (if players
+    (if (and players
+             (mm-get-player (elt players 0))
+             (mm-get-player (elt players 1)))
       (run-hooks *mm-play-hooks*
                  (mm-get-player (elt players 0))
                  (mm-get-player (elt players 1))))))
