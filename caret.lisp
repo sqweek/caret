@@ -45,7 +45,7 @@
 
 (defun caret-cmd-info (pl-entry args)
   (declare (ignore pl-entry args))
-  (caret-chat "Caret-0.9.7 written by sqweek in Lisp"))
+  (caret-chat "Caret-0.9.8 written by sqweek in Lisp"))
 
 (add-init-hook :misc #'startup)
 (add-chat-hook :misc #'caret-cmd)
