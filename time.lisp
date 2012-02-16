@@ -1,6 +1,6 @@
 ;; ========================== Time
 (defvar *players-time* (make-hash-table :test #'equal))
-(defvar *last-event* nil)
+(defvar *last-event* (list *name* (get-universal-time) 'join nil))
 
 (defun update-hist (player &optional (update-time nil))
   (let* ((cur-utime (or update-time (get-universal-time)))
@@ -158,6 +158,7 @@
      (destructuring-bind (lname time activity arg) *last-event*
        (let ((dur-str (duration-str (time-since time))))
          (case activity
+           ('join (caret-chat "~A ago, ~A joined the matchmaker" dur-str lname))
            ('play (caret-chat "~A ago, ~A played against ~A" dur-str lname arg))
            ('chat (caret-chat "~A ago, ~A said: ~A" dur-str lname arg))))))
     ((string-equal name *name*) (caret-chat "I'm right here!"))
