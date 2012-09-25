@@ -36,11 +36,11 @@
       (let* ((data (make-array 32768 :element-type 'character)))
         (read-sequence data stream)
         (close stream)
-        (let* ((applet (cl-ppcre:scan-to-strings "(?is)<applet.*?>" data))
-               (check-line (cl-ppcre:scan-to-strings "(?i)check \= \".*?\"" applet)))
+        (let* ((params (cl-ppcre:scan-to-strings "(?is)var parameters = {.*?}" data))
+               (check-line (cl-ppcre:scan-to-strings "(?i)check: '.*?'" params)))
           (subseq check-line
-                  (+ 1 (position #\" check-line))
-                  (position #\" check-line :from-end t))))
+                  (+ 1 (position #\' check-line))
+                  (position #\' check-line :from-end t))))
       (progn
         (close stream)
         nil))))
